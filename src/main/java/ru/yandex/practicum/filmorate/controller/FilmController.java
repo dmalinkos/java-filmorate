@@ -25,7 +25,7 @@ public class FilmController {
 
     @PostMapping
     public Film createFilm(@Valid @RequestBody Film film) {
-        if (film.getReleaseDate().isBefore(BEGIN)) {
+        if (isAfterBegin(film)) {
             log.warn("Дата релиза фильма не может быть раньше {}", BEGIN);
             throw new EntityNotExistException("Невозможная дата релиза фильма", FilmController.class.getName());
         }
@@ -38,7 +38,7 @@ public class FilmController {
 
     @PutMapping
     public Film update(@Valid @RequestBody Film film) {
-        if (!isAfterBegin(film)) {
+        if (!films.containsKey(film.getId())) {
             log.warn("Фильм с id={} не существует", film.getId());
             throw new EntityNotExistException("Фильм с таким id не существует", FilmController.class.getName());
         }
