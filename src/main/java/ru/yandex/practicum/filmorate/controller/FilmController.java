@@ -1,8 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import ru.yandex.practicum.filmorate.exception.FilmNotExistException;
-import ru.yandex.practicum.filmorate.exception.ReleaseDateNotPossible;
+import ru.yandex.practicum.filmorate.exception.EntityNotExistException;
 import ru.yandex.practicum.filmorate.model.Film;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,14 +15,20 @@ import java.util.Map;
 @RequestMapping("/films")
 @Slf4j
 public class FilmController {
-    private int id = 1;
-    private final Map<Integer, Film> films = new HashMap<>();
-    private final LocalDate begin = LocalDate.of(1895, 12, 28);
+    private int id;
+    private final Map<Integer, Film> films;
+    private static final LocalDate BEGIN = LocalDate.of(1895, 12, 28);
+    public FilmController() {
+        id = 1;
+        films = new HashMap<>();
+    }
 
     @PostMapping
     public Film createFilm(@Valid @RequestBody Film film) {
-        if (film.getReleaseDate().isBefore(begin))
-            throw new ReleaseDateNotPossible();
+        if (film.getReleaseDate().isBefore(BEGIN)) {
+            log.warn("Дата релиза фильма не может быть раньше {}", BEGIN);
+            throw new EntityNotExistException("Невозможная дата релиза фильма", FilmController.class.getName());
+        }
         log.info("Создание фильма ...");
         film.setId(generateId());
         films.put(film.getId(), film);
@@ -33,9 +38,9 @@ public class FilmController {
 
     @PutMapping
     public Film update(@Valid @RequestBody Film film) {
-        if (!films.containsKey(film.getId())) {
-            log.info("Фильм с id={} не существует", film.getId());
-            throw new FilmNotExistException();
+        if (!isAfterBegin(film)) {
+            log.warn("Фильм с id={} не существует", film.getId());
+            throw new EntityNotExistException("Фильм с таким id не существует", FilmController.class.getName());
         }
         log.info("Обновление фильма ...");
         films.put(film.getId(), film);
@@ -45,13 +50,15 @@ public class FilmController {
 
     @GetMapping
     public ArrayList<Film> findAll() {
-        log.info("Получение списка всех фильмов ...");
-        ArrayList<Film> allFilms = new ArrayList<>(films.values());
-        log.info("Получен список всех фильмов");
-        return allFilms;
+        log.info("Получение списка всех фильмов");
+        return new ArrayList<>(films.values());
     }
 
     private int generateId() {
         return id++;
+    }
+
+    private boolean isAfterBegin(Film film) {
+        return film.getReleaseDate().isBefore(BEGIN);
     }
 }

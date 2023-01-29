@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import ru.yandex.practicum.filmorate.exception.UserNotExistException;
+import ru.yandex.practicum.filmorate.exception.EntityNotExistException;
 import ru.yandex.practicum.filmorate.model.User;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +20,7 @@ public class UserController {
     @PostMapping
     public User createUser(@Valid @RequestBody User user) {
         log.info("Создание пользователя ...");
-        if (user.getName() == null) {
+        if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
         user.setId(generateId());
@@ -32,8 +32,8 @@ public class UserController {
     @PutMapping
     public User update(@Valid @RequestBody User user) {
         if (!users.containsKey(user.getId())) {
-            log.info("Пользователя с id={} не существует", user.getId());
-            throw new UserNotExistException();
+            log.warn("Пользователя с id={} не существует", user.getId());
+            throw new EntityNotExistException("Пользователя с таким id не существует ", UserController.class.getName());
         }
         log.info("Обновление пользователя ...");
         users.put(user.getId(), user);
@@ -43,16 +43,11 @@ public class UserController {
 
     @GetMapping
     public ArrayList<User> findAll() {
-        log.info("Получение списка всех пользователей ...");
-        ArrayList<User> allUsers = new ArrayList<>(users.values());
-        log.info("Получен список всех пользователей");
-        return allUsers;
+        log.info("Получение списка всех пользователей");
+        return new ArrayList<>(users.values());
     }
 
     private int generateId() {
         return id++;
     }
 }
-
-
-
