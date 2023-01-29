@@ -1,48 +1,39 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.typeAdapter.LocalDateAdapter;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import javax.validation.*;
 import java.time.LocalDate;
+import java.util.Set;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class FilmControllerTest {
-    private final HttpClient client = HttpClient.newHttpClient();
-    private final Gson gson = new GsonBuilder()
-            .registerTypeAdapter(LocalDate.class, new LocalDateAdapter())
-            .create();
+
+    private static Validator validator;
+
+    @BeforeAll
+    public static void setUp() {
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        validator = factory.getValidator();
+    }
 
     @Test
-    public void invalidName() throws IOException, InterruptedException {
+    public void invalidName() {
         Film film = Film.builder()
                 .name("")
                 .description("Description")
                 .duration(200)
                 .releaseDate(LocalDate.of(1900, 3, 25))
                 .build();
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(film), UTF_8))
-                .uri((URI.create("http://localhost:8080/films/")))
-                .header("Content-Type", "application/json")
-                .build();
-
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString(UTF_8));
-        assertEquals(400, response.statusCode());
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        assertFalse(violations.isEmpty());
     }
 
     @Test
-    public void invalidDescription() throws IOException, InterruptedException {
+    public void invalidDescription() {
         String badDescription = "1".repeat(201);
 
         Film film = Film.builder()
@@ -51,54 +42,32 @@ public class FilmControllerTest {
                 .duration(120)
                 .releaseDate(LocalDate.of(2000, 1, 1))
                 .build();
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(film), UTF_8))
-                .uri((URI.create("http://localhost:8080/films/")))
-                .header("Content-Type", "application/json")
-                .build();
-
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString(UTF_8));
-        assertEquals(400, response.statusCode());
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        assertFalse(violations.isEmpty());
     }
 
     @Test
-    public void invalidReleaseDate() throws IOException, InterruptedException {
+    public void invalidReleaseDate() {
         Film film = Film.builder()
                 .name("name")
                 .description("Description")
                 .duration(200)
-                .releaseDate(LocalDate.of(1800, 3, 25))
+                .releaseDate(LocalDate.of(100, 3, 25))
                 .build();
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(film), UTF_8))
-                .uri((URI.create("http://localhost:8080/films/")))
-                .header("Content-Type", "application/json")
-                .build();
-
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString(UTF_8));
-        assertEquals(400, response.statusCode());
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        assertFalse(violations.isEmpty());
     }
 
     @Test
-    public void invalidDuration() throws IOException, InterruptedException {
+    public void invalidDuration() {
         Film film = Film.builder()
                 .name("name")
                 .description("Description")
                 .duration(-10)
                 .releaseDate(LocalDate.of(1900, 3, 25))
                 .build();
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(film), UTF_8))
-                .uri((URI.create("http://localhost:8080/films/")))
-                .header("Content-Type", "application/json")
-                .build();
-
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString(UTF_8));
-        assertEquals(400, response.statusCode());
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        assertFalse(violations.isEmpty());
     }
 
 }
-

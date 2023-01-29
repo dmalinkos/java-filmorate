@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.model;
 
 import lombok.Builder;
 import lombok.Data;
+import ru.yandex.practicum.filmorate.customAnnotation.IsAfterEarliestDate;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
@@ -17,5 +18,6 @@ public class Film {
     private String description;
     @Positive
     private long duration;
+    @IsAfterEarliestDate
     private LocalDate releaseDate;
 }

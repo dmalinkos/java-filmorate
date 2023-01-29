@@ -6,7 +6,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,7 +16,6 @@ import java.util.Map;
 public class FilmController {
     private int id;
     private final Map<Integer, Film> films;
-    private static final LocalDate BEGIN = LocalDate.of(1895, 12, 28);
     public FilmController() {
         id = 1;
         films = new HashMap<>();
@@ -25,10 +23,6 @@ public class FilmController {
 
     @PostMapping
     public Film createFilm(@Valid @RequestBody Film film) {
-        if (isAfterBegin(film)) {
-            log.warn("Дата релиза фильма не может быть раньше {}", BEGIN);
-            throw new EntityNotExistException("Невозможная дата релиза фильма", FilmController.class.getName());
-        }
         log.info("Создание фильма ...");
         film.setId(generateId());
         films.put(film.getId(), film);
@@ -58,7 +52,4 @@ public class FilmController {
         return id++;
     }
 
-    private boolean isAfterBegin(Film film) {
-        return film.getReleaseDate().isBefore(BEGIN);
-    }
 }
