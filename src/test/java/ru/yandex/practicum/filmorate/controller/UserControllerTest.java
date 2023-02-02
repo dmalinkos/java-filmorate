@@ -1,27 +1,20 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.model.User;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
+import javax.validation.*;
 import java.time.LocalDate;
-import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
+@SpringBootTest
 public class UserControllerTest {
-    private static Validator validator;
 
-    @BeforeAll
-    public static void setUp() {
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        validator = factory.getValidator();
-    }
+    @Autowired
+    private UserController userController;
 
     @Test
     public void invalidLogin() {
@@ -31,8 +24,9 @@ public class UserControllerTest {
                 .name("Name")
                 .birthday(LocalDate.of(1998, 1, 1))
                 .build();
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertFalse(violations.isEmpty());
+        assertThrows(ConstraintViolationException.class,
+                () -> userController.createUser(user)
+        );
     }
 
     @Test
@@ -43,8 +37,9 @@ public class UserControllerTest {
                 .name("Name")
                 .birthday(LocalDate.of(1998, 1, 1))
                 .build();
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertFalse(violations.isEmpty());
+        assertThrows(ConstraintViolationException.class,
+                () -> userController.createUser(user)
+        );
     }
 
     @Test
@@ -54,8 +49,7 @@ public class UserControllerTest {
                 .email("user@ya.ru")
                 .birthday(LocalDate.of(1998, 1, 1))
                 .build();
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertTrue(violations.isEmpty());
+        assertDoesNotThrow(() -> userController.createUser(user));
     }
 
     @Test
@@ -66,8 +60,8 @@ public class UserControllerTest {
                 .name("Name")
                 .birthday(LocalDate.of(2030, 1, 1))
                 .build();
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertFalse(violations.isEmpty());
+        assertThrows(ConstraintViolationException.class,
+                () -> userController.createUser(user)
+        );
     }
-
 }

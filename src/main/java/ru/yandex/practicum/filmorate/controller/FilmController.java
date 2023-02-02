@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.exception.EntityNotExistException;
 import ru.yandex.practicum.filmorate.model.Film;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +14,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/films")
 @Slf4j
+@Validated
 public class FilmController {
     private int id;
     private final Map<Integer, Film> films;
@@ -34,7 +36,7 @@ public class FilmController {
     public Film update(@Valid @RequestBody Film film) {
         if (!films.containsKey(film.getId())) {
             log.warn("Фильм с id={} не существует", film.getId());
-            throw new EntityNotExistException("Фильм с таким id не существует", FilmController.class.getName());
+            throw new EntityNotExistException("Фильм с таким id не существует", Film.class.getName());
         }
         log.info("Обновление фильма ...");
         films.put(film.getId(), film);
