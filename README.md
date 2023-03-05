@@ -1,2 +1,2 @@
 # DB Scheme
-![Untitled (1)](https://user-images.githubusercontent.com/66018731/222812038-d55eef78-5267-4434-a022-15f6e08c418b.png)
+![Untitled (2)](https://user-images.githubusercontent.com/66018731/222973685-218ceece-8b45-4f76-86a6-5586b22d327c.png)
