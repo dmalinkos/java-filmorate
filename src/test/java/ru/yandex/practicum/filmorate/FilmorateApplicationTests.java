@@ -30,7 +30,8 @@ class FilmorateApplicationTests {
 	private final GenreDao genreDao;
 
 	@Test
-	@Sql(scripts = "file:src/test/java/ru/yandex/practicum/filmorate/testResources/userTest.sql")
+	@Sql(scripts = "file:src/test/java/ru/yandex/practicum/filmorate/testResources/dataTest.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+	@Sql(scripts = "file:src/test/java/ru/yandex/practicum/filmorate/testResources/deleteData.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 	void testFindUserById() {
 		Optional<User> userOptional = Optional.of(userStorage.findById(1L));
 		assertThat(userOptional)
@@ -44,7 +45,8 @@ class FilmorateApplicationTests {
 	}
 
 	@Test
-	@Sql(scripts = "file:src/test/java/ru/yandex/practicum/filmorate/testResources/filmTest.sql")
+	@Sql(scripts = "file:src/test/java/ru/yandex/practicum/filmorate/testResources/dataTest.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+	@Sql(scripts = "file:src/test/java/ru/yandex/practicum/filmorate/testResources/deleteData.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 	void testFindFilmById() {
 		Optional<Film> filmOptional = Optional.of(filmStorage.findById(1L));
 		assertThat(filmOptional)
