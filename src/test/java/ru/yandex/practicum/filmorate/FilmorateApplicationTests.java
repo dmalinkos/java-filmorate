@@ -24,7 +24,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class FilmorateApplicationTests {
-/*	private final UserStorage userStorage;
+	private final UserStorage userStorage;
 	private final FilmStorage filmStorage;
 	private final MpaDao mpaDao;
 	private final GenreDao genreDao;
@@ -77,5 +77,5 @@ class FilmorateApplicationTests {
 				.hasValueSatisfying(mpa -> assertThat(mpa).hasFieldOrPropertyWithValue("id", 1))
 				.hasValueSatisfying(mpa -> assertThat(mpa).hasFieldOrPropertyWithValue("name", "G")
 				);
-	}*/
+	}
 }
