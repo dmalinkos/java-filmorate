@@ -61,7 +61,6 @@ public class UserDbStorage implements UserStorage {
     public Set<Long> getFriendsIds(Long userId) {
         Set<Long> friends = new HashSet<>();
         String sql = "SELECT FRIEND_ID FROM FRIENDSHIPS WHERE USER_ID = ?";
-
         SqlRowSet friendsSetRow = jdbcTemplate.queryForRowSet(sql, userId);
         while (friendsSetRow.next()) {
             friends.add(friendsSetRow.getLong("FRIEND_ID"));
