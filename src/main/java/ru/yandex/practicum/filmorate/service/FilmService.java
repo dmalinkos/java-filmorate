@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.dao.FilmStorage;
 
 import java.util.ArrayList;
 
@@ -18,10 +18,6 @@ public class FilmService {
 
     public Film update(Film film) {
         return filmStorage.update(film);
-    }
-
-    public Film delete(Film film) {
-        return filmStorage.delete(film);
     }
 
     public Film like(Long filmId, Long userId) {

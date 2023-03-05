@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.dao.UserStorage;
 import ru.yandex.practicum.filmorate.exception.EntityNotExistException;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -10,7 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 @Component
-public class InMemoryUserStorage implements  UserStorage{
+public class InMemoryUserStorage implements UserStorage {
     private Long id;
     final private Map<Long, User> users;
 
@@ -30,14 +31,10 @@ public class InMemoryUserStorage implements  UserStorage{
     }
 
     @Override
-    public User delete(User user) {
-        return users.remove(user.getId());
-    }
-
-    @Override
     public User update(User user) {
-        if (!users.containsKey(user.getId())) {
-            throw new EntityNotExistException(String.format("Пользователя с id=%d не существует", user.getId()));
+        isExist(user.getId());
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
         }
         users.put(user.getId(), user);
         return user;
@@ -73,12 +70,16 @@ public class InMemoryUserStorage implements  UserStorage{
 
     @Override
     public User findById(Long id) {
-        if (!users.containsKey(id)) {
-            throw new EntityNotExistException(String.format("Пользователя с id=%d не существует", id));
-        }
+        isExist(id);
         return users.get(id);
     }
 
+    @Override
+    public void isExist(Long id) {
+        if (!users.containsKey(id)) {
+            throw new EntityNotExistException(String.format("Пользователя с id=%d не существует", id));
+        }
+    }
     private Long generateId() {
         return id++;
     }

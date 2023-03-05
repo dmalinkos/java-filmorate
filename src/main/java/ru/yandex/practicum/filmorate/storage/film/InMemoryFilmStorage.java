@@ -2,9 +2,10 @@ package ru.yandex.practicum.filmorate.storage.film;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.dao.FilmStorage;
 import ru.yandex.practicum.filmorate.exception.EntityNotExistException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.dao.UserStorage;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -39,11 +40,6 @@ public class InMemoryFilmStorage implements FilmStorage {
         }
         films.put(film.getId(), film);
         return film;
-    }
-
-    @Override
-    public Film delete(Film film) {
-        return films.remove(film.getId());
     }
 
     @Override

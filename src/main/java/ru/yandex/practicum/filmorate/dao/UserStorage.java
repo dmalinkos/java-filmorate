@@ -1,15 +1,14 @@
-package ru.yandex.practicum.filmorate.storage.user;
+package ru.yandex.practicum.filmorate.dao;
 
 import ru.yandex.practicum.filmorate.model.User;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Set;
 
 public interface UserStorage {
 
     User add(User user);
-
-    User delete(User user);
 
     User update(User user);
 
@@ -19,7 +18,9 @@ public interface UserStorage {
 
     User removeFriend(Long userId, Long friendId);
 
-    ArrayList<User> findAll();
+    ArrayList<User> findAll() throws SQLException;
 
     User findById(Long id);
+
+    void isExist(Long id);
 }
