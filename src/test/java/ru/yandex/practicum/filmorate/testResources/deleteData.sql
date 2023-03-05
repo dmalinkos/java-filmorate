@@ -1,2 +1,3 @@
+SET MODE PostgreSQL;
 DELETE FROM films;
 DELETE FROM users;
