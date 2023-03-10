@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 @RestController
@@ -30,7 +31,7 @@ public class UserController {
     }
 
     @GetMapping
-    public ArrayList<User> findAll() {
+    public ArrayList<User> findAll() throws SQLException {
         return userService.findAll();
     }
 
@@ -40,13 +41,14 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends")
-    public ArrayList<User> getFriends(@PathVariable Long id) {
+    public ArrayList<User> getFriends(@PathVariable Long id) throws SQLException {
         return userService.getFriends(id);
     }
+
     @GetMapping("/{id}/friends/common/{otherId}")
     public ArrayList<User> getCommonFriends(
             @PathVariable Long id,
-            @PathVariable Long otherId) {
+            @PathVariable Long otherId) throws SQLException {
         return userService.getCommonFriends(id, otherId);
     }
 
