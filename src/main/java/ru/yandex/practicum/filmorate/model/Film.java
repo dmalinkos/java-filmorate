@@ -8,6 +8,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -16,7 +17,7 @@ public class Film {
     private Long id;
     @NotBlank
     private String name;
-    @Size(max=200)
+    @Size(max = 200)
     private String description;
     @Positive
     private long duration;
@@ -25,4 +26,5 @@ public class Film {
     private Mpa mpa;
     private Set<Genre> genres;
     private Set<Long> likesSet;
+    private List<Director> directors;
 }

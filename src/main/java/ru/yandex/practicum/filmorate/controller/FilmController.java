@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/films")
@@ -26,6 +27,11 @@ public class FilmController {
     @PutMapping
     public Film update(@Valid @RequestBody Film film) {
         return filmService.update(film);
+    }
+
+    @DeleteMapping("/{id}")
+    public Film delete(@PathVariable("id") Long filmId) {
+        return filmService.delete(filmId);
     }
 
     @GetMapping
@@ -55,5 +61,13 @@ public class FilmController {
             @PathVariable Long filmId,
             @PathVariable Long userId) {
         return filmService.unlike(filmId, userId);
+    }
+
+    @GetMapping("/director/{directorId}")
+    public List<Film> getDirectorFilms(@PathVariable("directorId") Long directorId,
+                                       @RequestParam(defaultValue = "name", required = false) String sortBy) {
+        log.debug(String.format("Получен GET запрос к эндпоинту films/director на получение " +
+                "всех фильмов режиссера с ID:%d.", directorId));
+        return filmService.getDirectorFilms(directorId, sortBy.toLowerCase());
     }
 }

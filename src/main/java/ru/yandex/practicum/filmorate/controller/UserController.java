@@ -30,6 +30,11 @@ public class UserController {
         return userService.update(user);
     }
 
+    @DeleteMapping("/{id}")
+    public User delete(@PathVariable("id") Long userId) {
+        return userService.delete(userId);
+    }
+
     @GetMapping
     public ArrayList<User> findAll() throws SQLException {
         return userService.findAll();
