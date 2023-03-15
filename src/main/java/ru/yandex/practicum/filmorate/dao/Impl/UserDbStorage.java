@@ -52,9 +52,21 @@ public class UserDbStorage implements UserStorage {
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
-        String sql = "UPDATE USERS SET USER_EMAIL = ?, USER_LOGIN = ?, USER_NAME = ?, USER_BIRTHDAY = ? WHERE USER_ID = ?";
+        String sql = "UPDATE USERS SET USER_EMAIL = ?, USER_LOGIN = ?, USER_NAME = ?, " +
+                "USER_BIRTHDAY = ? WHERE USER_ID = ?";
         jdbcTemplate.update(sql, user.getEmail(), user.getLogin(), user.getName(), user.getBirthday(), user.getId());
         return user;
+    }
+
+    @Override
+    public User delete(Long userId) {
+        User user = findById(userId);
+        String sqlQuery = "DELETE FROM users WHERE user_id = ?";
+        if (jdbcTemplate.update(sqlQuery, userId) > 0) {
+            return user;
+        } else {
+            throw new EntityNotExistException(String.format("Пользователя с ID:%d нет в базе.", userId));
+        }
     }
 
     @Override

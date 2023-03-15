@@ -25,6 +25,10 @@ public class UserService {
         return userStorage.update(user);
     }
 
+    public User delete(Long userId) {
+        return userStorage.delete(userId);
+    }
+
     public ArrayList<User> findAll() throws SQLException {
         return userStorage.findAll();
     }
