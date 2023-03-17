@@ -21,24 +21,25 @@ public class ReviewController {
 
     @PostMapping
     public Review addReview(@Valid @RequestBody Review review) {
-        log.info("Получен POST-запрос к эндпоинту /reviews (добавление отзыва). Пользователь-id: {}; фильм-id: {}", review.getUserId(), review.getFilmId());
+        log.info("POST /reviews (добавление отзыва). Пользователь-id: {}; фильм-id: {}",
+                                                                                review.getUserId(), review.getFilmId());
         return reviewService.add(review);
     }
     @PutMapping
     public Review updateReview(@Valid @RequestBody Review review) {
-        log.info("Получен PUT-запрос к эндпоинту /reviews (обновление отзыва). Отзыв-id: {}", review.getReviewId());
+        log.info("PUT-запрос /reviews (обновление отзыва). Отзыв-id: {}", review.getReviewId());
         return reviewService.update(review);
     }
 
     @DeleteMapping("/{id}")
     public Review DeleteReview(@PathVariable("id") Long reviewId) {
-        log.info("Получен DELETE-запрос к эндпоинту /reviews (удаление отзыва). id: {}", reviewId);
+        log.info("DELETE-запрос /reviews (удаление отзыва). Отзыв-id: {}", reviewId);
         return reviewService.deleteReviewById(reviewId);
     }
 
     @GetMapping("/{id}")
     public Review getReview(@PathVariable("id") Long reviewId) {
-        log.info("Получен GET-запрос к эндпоинту /reviews (получение отзыва). id: {}", reviewId);
+        log.info("GET-запрос /reviews (получение отзыва). Отзыв-id: {}", reviewId);
         return reviewService.readByReviewId(reviewId);
     }
 
@@ -46,34 +47,34 @@ public class ReviewController {
     public List<Review> getReviews(
                         @RequestParam(name = "filmId", required = false) Long filmId,
                         @RequestParam(name = "count", required = false, defaultValue = "10") Integer count) {
-        log.info("Получен GET-запрос к эндпоинту /reviews (получение списка отзывов)");
+        log.info("GET-запрос /reviews (получение списка отзывов)");
             return reviewService.getReviews(filmId, count);
     }
 
     @PutMapping("{id}/like/{userId}")
     public Review likeReviewByUser(@PathVariable("id") Long reviewId, @PathVariable Long userId) {
-            log.info("Получен PUT-запрос к эндпоинту /reviews (\"лайк\" отзыва). Отзыв-id: {}. Пользователь-id {}", reviewId, userId);
+            log.info("PUT-запрос /reviews (положительная оценка отзыва-id: {} пользователем-id: {})", reviewId, userId);
             Integer rateValueFromUser = 1;
             return reviewService.setNewRateFromUser(userId, reviewId, rateValueFromUser);
      }
 
     @PutMapping("{id}/dislike/{userId}")
     public Review dislikeReviewByUser(@PathVariable("id") Long reviewId, @PathVariable Long userId) {
-        log.info("Получен PUT-запрос к эндпоинту /reviews (\"дислайк\" отзыва). Отзыв-id: {}. Пользователь-id {}", reviewId, userId);
+        log.info("PUT-запрос /reviews (дизлайк отзыва-id: {} пользователем-id: {})", reviewId, userId);
         Integer rateValueFromUser = -1;
         return reviewService.setNewRateFromUser(userId, reviewId, rateValueFromUser);
     }
 
     @DeleteMapping("{id}/like/{userId}")
-    public Review deleteLikeByUser(@PathVariable("id") Long reviewId, Long userId) {
-        log.info("Получен DELETE-запрос к эндпоинту /reviews...like (Пользователь-id {} удаляет оценку отзыву-id {}"
+    public Review deleteLikeByUser(@PathVariable("id") Long reviewId, @PathVariable Long userId) {
+        log.info(" DELETE-запрос /reviews...like (Пользователь-id {} удаляет оценку отзыву-id {}"
                 , userId, reviewId);
         return reviewService.deleteRateFromUser(userId, reviewId);
     }
 
     @DeleteMapping("{id}/dislike/{userId}")
-    public Review deleteDislikeByUser(@PathVariable("id") Long reviewId, Long userId) {
-        log.info("Получен DELETE-запрос к эндпоинту /reviews...dislike (Пользователь-id {} удаляет оценку отзыву-id {}"
+    public Review deleteDislikeByUser(@PathVariable("id") Long reviewId, @PathVariable Long userId) {
+        log.info("DELETE-запрос  /reviews...dislike (Пользователь-id {} удаляет дизлайк отзыву-id {}"
                 , userId, reviewId);
         return reviewService.deleteRateFromUser(userId, reviewId);
     }

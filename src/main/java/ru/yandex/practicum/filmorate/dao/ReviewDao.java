@@ -16,7 +16,7 @@ public interface ReviewDao {
 
     Review setNewRateOfUser(Long userId, Long reviewId, Integer newRate);
 
-    Review deleteRateOfUser(Long userId, Long reviewId);
+    Review deleteRateFromUser(Long userId, Long reviewId);
 
     List<Review> getTopRatedReviews(Integer count);
 

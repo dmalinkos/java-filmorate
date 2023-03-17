@@ -3,10 +3,11 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.Impl.FilmDbStorage;
+import ru.yandex.practicum.filmorate.dao.Impl.UserDbStorage;
 import ru.yandex.practicum.filmorate.dao.ReviewDao;
 import ru.yandex.practicum.filmorate.model.Review;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -15,8 +16,12 @@ import java.util.List;
 public class ReviewService {
 
     private final ReviewDao reviewDao;
+    private final UserDbStorage userDbStorage;
+    private final FilmDbStorage filmDbStorage;
 
     public Review add(Review review) {
+        userDbStorage.isExist(review.getUserId());
+        filmDbStorage.isExist(review.getFilmId());
         return reviewDao.add(review);
     }
 
@@ -37,7 +42,7 @@ public class ReviewService {
     }
 
     public Review deleteRateFromUser(Long userId, Long reviewId) {
-        return reviewDao.readByReviewId(reviewId);
+        return reviewDao.deleteRateFromUser(userId, reviewId);
     }
 
     public List<Review> getReviews(Long filmId, Integer count) {
