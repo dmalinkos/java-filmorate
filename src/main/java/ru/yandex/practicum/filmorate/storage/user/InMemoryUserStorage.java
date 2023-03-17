@@ -41,6 +41,11 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
+    public User delete(Long userId) {
+        return null;
+    }
+
+    @Override
     public Set<Long> getFriendsIds(Long userId) {
         return findById(userId).getSetFriends();
     }
