@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.dao;
 
 
+import org.springframework.web.bind.annotation.RequestParam;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.ArrayList;
@@ -25,4 +26,7 @@ public interface FilmStorage {
     ArrayList<Film> getMostPopular(int n);
 
     List<Film> getDirectorFilms(Long directorId, String sortBy);
+    ArrayList<Film> getCommonFilms(Long userId, Long friendId);
+
+    List<Film> searchFilms( String query,  String by);
 }
