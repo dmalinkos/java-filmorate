@@ -76,7 +76,6 @@ public class FilmController {
                 "общих фильмов пользователя с ID:%d. и его друга с ID:%d", userId, friendId));
         return filmService.getCommonFilms(userId, friendId);
     }
-
     @GetMapping("/search")
     public List<Film> searchFilms(@RequestParam String query, @RequestParam String by){
         log.debug("Получен GET запрос к эндпоинту films/search на получение " +
