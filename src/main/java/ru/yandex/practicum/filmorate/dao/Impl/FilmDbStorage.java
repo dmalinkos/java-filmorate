@@ -32,7 +32,6 @@ public class FilmDbStorage implements FilmStorage {
         String sql = "INSERT INTO films (film_name, film_description, film_releaseDate, film_duration, mpa_id) " +
                 "VALUES (?, ?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
-
         jdbcTemplate.update(con -> {
             PreparedStatement ps = con.prepareStatement(sql,
                     new String[]{"film_id"});
@@ -155,7 +154,7 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
-    private void isExist(Long id) {
+    public void isExist(Long id) {
         String sql = "SELECT FILM_ID FROM FILMS WHERE FILM_ID = ?";
         SqlRowSet filmRow = jdbcTemplate.queryForRowSet(sql, id);
         if (!filmRow.next()) {
