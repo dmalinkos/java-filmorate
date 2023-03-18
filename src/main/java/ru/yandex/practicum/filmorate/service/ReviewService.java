@@ -3,11 +3,16 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.EventDao;
 import ru.yandex.practicum.filmorate.dao.Impl.FilmDbStorage;
 import ru.yandex.practicum.filmorate.dao.Impl.UserDbStorage;
 import ru.yandex.practicum.filmorate.dao.ReviewDao;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.Review;
 
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -18,11 +23,20 @@ public class ReviewService {
     private final ReviewDao reviewDao;
     private final UserDbStorage userDbStorage;
     private final FilmDbStorage filmDbStorage;
+    private final EventDao eventDao;
 
     public Review add(Review review) {
         userDbStorage.isExist(review.getUserId());
         filmDbStorage.isExist(review.getFilmId());
-        return reviewDao.add(review);
+        Review addedReview = reviewDao.add(review);
+        eventDao.create(Event.builder()
+                .userId(addedReview.getUserId())
+                .timestamp(Instant.now().toEpochMilli())
+                .eventType(EventType.REVIEW)
+                .operation(Operation.ADD)
+                .entityId(addedReview.getReviewId())
+                .build());
+        return addedReview;
     }
 
     public Review readByReviewId(Long id) {
@@ -30,11 +44,27 @@ public class ReviewService {
     }
 
     public Review update(Review review) {
-        return reviewDao.update(review);
+        Review updatedReview = reviewDao.update(review);
+        eventDao.create(Event.builder()
+                .userId(updatedReview.getUserId())
+                .timestamp(Instant.now().toEpochMilli())
+                .eventType(EventType.REVIEW)
+                .operation(Operation.UPDATE)
+                .entityId(updatedReview.getReviewId())
+                .build());
+        return updatedReview;
     }
 
     public Review deleteReviewById(Long id) {
-        return reviewDao.deleteById(id);
+        Review deletedReview = reviewDao.deleteById(id);
+        eventDao.create(Event.builder()
+                .userId(deletedReview.getUserId())
+                .timestamp(Instant.now().toEpochMilli())
+                .eventType(EventType.REVIEW)
+                .operation(Operation.REMOVE)
+                .entityId(deletedReview.getReviewId())
+                .build());
+        return deletedReview;
     }
 
     public Review setNewRateFromUser(Long userId, Long reviewId, Integer newRate) {

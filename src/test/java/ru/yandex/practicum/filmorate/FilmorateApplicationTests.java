@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.springframework.test.util.AssertionErrors.assertEquals;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
@@ -78,6 +77,7 @@ class FilmorateApplicationTests {
 
 	@Test
 	@Sql(scripts = "file:src/test/java/ru/yandex/practicum/filmorate/testResources/dataTest.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+	@Sql(scripts = "file:src/test/java/ru/yandex/practicum/filmorate/testResources/deleteData.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 	void testFindFeedByUserId() {
 		Optional<ArrayList<Event>> feed = Optional.of(new ArrayList<>(eventDao.findAllByUserId(1L)));
 		assertThat(feed)
