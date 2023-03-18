@@ -25,4 +25,8 @@ public interface FilmStorage {
     ArrayList<Film> getMostPopular(int n);
 
     List<Film> getDirectorFilms(Long directorId, String sortBy);
+
+    ArrayList<Film> getCommonFilms(Long userId, Long friendId);
+
+    List<Film> searchFilms( String query,  String by);
 }
