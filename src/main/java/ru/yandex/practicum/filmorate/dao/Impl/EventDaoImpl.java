@@ -46,7 +46,7 @@ public class EventDaoImpl implements EventDao {
 
     @Override
     public List<Event> findAllByUserId(Long userId) {
-        String sql = "SELECT * FROM event WHERE user_id = ?";
+        String sql = "SELECT * FROM events WHERE user_id = ?";
         return new ArrayList<>(jdbcTemplate.query(sql, this::mapRowToEvent, userId));
     }
 

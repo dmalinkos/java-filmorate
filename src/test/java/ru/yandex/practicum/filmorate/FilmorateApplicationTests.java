@@ -6,19 +6,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
-import ru.yandex.practicum.filmorate.dao.FilmStorage;
-import ru.yandex.practicum.filmorate.dao.GenreDao;
-import ru.yandex.practicum.filmorate.dao.MpaDao;
-import ru.yandex.practicum.filmorate.dao.UserStorage;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.dao.*;
+import ru.yandex.practicum.filmorate.model.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.springframework.test.util.AssertionErrors.assertEquals;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
@@ -28,6 +24,7 @@ class FilmorateApplicationTests {
 	private final FilmStorage filmStorage;
 	private final MpaDao mpaDao;
 	private final GenreDao genreDao;
+	private final EventDao eventDao;
 
 	@Test
 	@Sql(scripts = "file:src/test/java/ru/yandex/practicum/filmorate/testResources/dataTest.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
@@ -76,6 +73,21 @@ class FilmorateApplicationTests {
 				.isPresent()
 				.hasValueSatisfying(mpa -> assertThat(mpa).hasFieldOrPropertyWithValue("id", 1))
 				.hasValueSatisfying(mpa -> assertThat(mpa).hasFieldOrPropertyWithValue("name", "G")
+				);
+	}
+
+	@Test
+	@Sql(scripts = "file:src/test/java/ru/yandex/practicum/filmorate/testResources/dataTest.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+	void testFindFeedByUserId() {
+		Optional<ArrayList<Event>> feed = Optional.of(new ArrayList<>(eventDao.findAllByUserId(1L)));
+		assertThat(feed)
+				.isPresent()
+				.hasValueSatisfying(event -> assertThat(event.get(0)).hasFieldOrPropertyWithValue("eventId", 1L))
+				.hasValueSatisfying(event -> assertThat(event.get(0)).hasFieldOrPropertyWithValue("userId", 1L))
+				.hasValueSatisfying(event -> assertThat(event.get(0)).hasFieldOrPropertyWithValue("timestamp", 1670590017281L))
+				.hasValueSatisfying(event -> assertThat(event.get(0)).hasFieldOrPropertyWithValue("eventType", EventType.FRIEND))
+				.hasValueSatisfying(event -> assertThat(event.get(0)).hasFieldOrPropertyWithValue("operation", Operation.ADD))
+				.hasValueSatisfying(event -> assertThat(event.get(0)).hasFieldOrPropertyWithValue("entityId", 2L)
 				);
 	}
 }
