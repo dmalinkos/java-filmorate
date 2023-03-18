@@ -9,7 +9,6 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.*;
 import ru.yandex.practicum.filmorate.exception.EntityNotExistException;
-import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.sql.Date;
@@ -27,7 +26,6 @@ public class FilmDbStorage implements FilmStorage {
     private final MpaDao mpaDao;
     private final GenreDao genreDao;
     private final UserStorage userStorage;
-    private final DirectorStorage directorStorage;
 
     @Override
     public Film add(Film film) {
@@ -191,7 +189,7 @@ public class FilmDbStorage implements FilmStorage {
         }
         return List.of();
     }
-    private void isExist(Long id) {
+    public void isExist(Long id) {
         String sql = "SELECT FILM_ID FROM FILMS WHERE FILM_ID = ?";
         SqlRowSet filmRow = jdbcTemplate.queryForRowSet(sql, id);
         if (!filmRow.next()) {
