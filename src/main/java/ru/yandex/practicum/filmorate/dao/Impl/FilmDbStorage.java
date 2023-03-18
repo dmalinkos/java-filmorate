@@ -50,10 +50,6 @@ public class FilmDbStorage implements FilmStorage {
             String sqlGenres = "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?) ON CONFLICT DO NOTHING";
             film.getGenres().forEach(genre -> jdbcTemplate.update(sqlGenres, generatedId, genre.getId()));
         }
-        /*if (film.getDirectors() != null) {
-            String sqlDirectors = "INSERT INTO film_directors (film_id, director_id) VALUES (?, ?) ON CONFLICT DO NOTHING";
-            film.getDirectors().forEach(director -> jdbcTemplate.update(sqlDirectors, generatedId, director.getId()));
-        }*/
         return findById(generatedId);
     }
 
@@ -195,7 +191,6 @@ public class FilmDbStorage implements FilmStorage {
         }
         return List.of();
     }
-
     private void isExist(Long id) {
         String sql = "SELECT FILM_ID FROM FILMS WHERE FILM_ID = ?";
         SqlRowSet filmRow = jdbcTemplate.queryForRowSet(sql, id);
