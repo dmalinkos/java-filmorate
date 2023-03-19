@@ -64,15 +64,14 @@ public class SimpleRecommendations {
 
     private List<Long> removeInterception(HashMap<Long, List<Long>> aggLikes, Long userId) {
 
-        Long count = 0L;
+        Long count;
         Long maxCount = 0L;
         Long maxCountUserId = userId;
 
         var l1 = aggLikes.get(userId);
 
         if (l1 == null) {
-            throw new EntityNotExistException(
-                    String.format("removeInterception. Ошибка получения списка лайков пользователя с userId = %d", userId));
+            return new ArrayList<>();
         }
 
         for(var e2 : aggLikes.entrySet()) {
@@ -88,8 +87,7 @@ public class SimpleRecommendations {
         if (maxCountUserId > 0) {
             var l2 = aggLikes.get(maxCountUserId);
             if (l2 == null) {
-                throw new EntityNotExistException(
-                        String.format("removeInterception. Ошибка получения списка лайков пользователя с userId = %d", maxCountUserId));
+                return new ArrayList<>();
             }
             return l2.stream().filter(i -> l1.stream().noneMatch(n -> n == i)).collect(Collectors.toList());
         }
