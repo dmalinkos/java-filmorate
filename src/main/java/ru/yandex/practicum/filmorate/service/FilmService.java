@@ -3,10 +3,11 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.DirectorStorage;
-import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.dao.EventDao;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.dao.FilmStorage;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +16,7 @@ import java.util.List;
 public class FilmService {
     private final FilmStorage filmStorage;
     private final DirectorStorage directorStorage;
+    private final EventDao eventDao;
 
     public Film add(Film film) {
         Film addedFilm = filmStorage.add(film);
@@ -35,11 +37,27 @@ public class FilmService {
     }
 
     public Film like(Long filmId, Long userId) {
-        return directorStorage.getFilmDirectors(filmStorage.like(filmId, userId));
+        Film film = directorStorage.getFilmDirectors(filmStorage.like(filmId, userId));
+        eventDao.create(Event.builder()
+                .userId(userId)
+                .timestamp(Instant.now().toEpochMilli())
+                .eventType(EventType.LIKE)
+                .operation(Operation.ADD)
+                .entityId(filmId)
+                .build());
+        return film;
     }
 
     public Film unlike(Long filmId, Long userId) {
-        return directorStorage.getFilmDirectors(filmStorage.unlike(filmId, userId));
+        Film film = directorStorage.getFilmDirectors(filmStorage.unlike(filmId, userId));
+        eventDao.create(Event.builder()
+                .userId(userId)
+                .timestamp(Instant.now().toEpochMilli())
+                .eventType(EventType.LIKE)
+                .operation(Operation.REMOVE)
+                .entityId(filmId)
+                .build());
+        return film;
     }
 
     public ArrayList<Film> getMostPopular(int n) {
