@@ -114,6 +114,17 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public List<Film> getListFilms(List<Long> filmList) {
+        String inSql = String.join(",", Collections.nCopies(filmList.size(), "?"));
+
+        List<Film> lf = jdbcTemplate.query(
+                String.format("SELECT * FROM films WHERE film_id IN (%s)", inSql),
+                filmList.toArray(),
+                this::mapRowToFilm);
+        return lf;
+    }
+
+    @Override
     public ArrayList<Film> getMostPopular(int n) {
         String sql = "SELECT f.* " +
                 "FROM likes AS l " +
