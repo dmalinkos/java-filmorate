@@ -73,6 +73,6 @@ public class UserService {
     }
 
     public List<Film> getRecommendations(Long id) {
-        return simpleRecommendations.getFilmLikesTable(id);
+        return simpleRecommendations.getListOfRecommendedFilms(id);
     }
 }

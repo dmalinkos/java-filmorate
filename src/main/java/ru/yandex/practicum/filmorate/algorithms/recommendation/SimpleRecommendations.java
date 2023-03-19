@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.FilmStorage;
-import ru.yandex.practicum.filmorate.exception.EntityNotExistException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Like;
 
@@ -29,43 +28,39 @@ public class SimpleRecommendations {
 
     private final FilmStorage filmStorage;
 
-    public List<Film> getFilmLikesTable(Long id) {
+    public List<Film> getListOfRecommendedFilms(Long id) {
 
-        List<Like> likesTable = jdbcTemplate.query("SELECT * FROM likes", this::mapRowToLike);
-        HashMap<Long, List<Long>> aggLikes = collectionOfLikes(likesTable);
-        List<Long> intercept = removeInterception(aggLikes, id);
+        List<Like> tableOfLikes = jdbcTemplate.query("SELECT * FROM likes", this::mapRowToLike);
+        HashMap<Long, List<Long>> collectionOfLikes = makeCollectionOfLike(tableOfLikes);
+        List<Long> listOfRecommendations = makeRecommendationsList(collectionOfLikes, id);
 
-        if (intercept.size() > 0) {
-            return filmStorage.getListFilms(intercept);
+        if (listOfRecommendations.size() > 0) {
+            return filmStorage.getListFilms(listOfRecommendations);
         }
 
         return new ArrayList<>();
     }
 
-    private HashMap<Long, List<Long>> collectionOfLikes(List<Like> likesList) {
-        HashMap<Long, List<Long>> collLikes = new HashMap<>();
+    private HashMap<Long, List<Long>> makeCollectionOfLike(List<Like> likesList) {
+        HashMap<Long, List<Long>> collectionOfLikes = new HashMap<>();
 
         for (var like : likesList) {
             Long userId = like.getUserId();
-            if (!collLikes.containsKey(userId)) {
-                collLikes.put(userId, new ArrayList<>());
+            if (!collectionOfLikes.containsKey(userId)) {
+                collectionOfLikes.put(userId, new ArrayList<>());
             }
-            var l1 = collLikes.get(userId);
 
-            if (l1 == null) {
-                throw new EntityNotExistException(
-                        String.format("collectionOfLikes. Ошибка получения списка лайков пользователя с userId = %d", userId));
-            }
+            var l1 = collectionOfLikes.get(userId);
 
             l1.add(like.getFilmId());
         }
-        return collLikes;
+        return collectionOfLikes;
     }
 
-    private List<Long> removeInterception(HashMap<Long, List<Long>> aggLikes, Long userId) {
+    private List<Long> makeRecommendationsList(HashMap<Long, List<Long>> aggLikes, Long userId) {
 
-        Long count;
-        Long maxCount = 0L;
+        long count;
+        long maxCount = 0L;
         Long maxCountUserId = userId;
 
         var l1 = aggLikes.get(userId);
@@ -76,7 +71,7 @@ public class SimpleRecommendations {
 
         for(var e2 : aggLikes.entrySet()) {
             if (!e2.getKey().equals(userId)) {
-                count = l1.stream().filter(i -> e2.getValue().stream().anyMatch(n -> n == i)).count();
+                count = l1.stream().filter(i -> e2.getValue().stream().anyMatch(n -> Objects.equals(n, i))).count();
                 if (count >= maxCount) {
                     maxCount = count;
                     maxCountUserId = e2.getKey();
@@ -84,12 +79,9 @@ public class SimpleRecommendations {
             }
         }
 
-        if (maxCountUserId > 0) {
+        if (!Objects.equals(maxCountUserId, userId)) {
             var l2 = aggLikes.get(maxCountUserId);
-            if (l2 == null) {
-                return new ArrayList<>();
-            }
-            return l2.stream().filter(i -> l1.stream().noneMatch(n -> n == i)).collect(Collectors.toList());
+            return l2.stream().filter(i -> l1.stream().noneMatch(n -> Objects.equals(n, i))).collect(Collectors.toList());
         }
         return new ArrayList<>();
     }
