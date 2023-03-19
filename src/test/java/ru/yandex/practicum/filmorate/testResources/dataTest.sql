@@ -8,3 +8,6 @@ VALUES (1, 'ДМБ', 'Описание', '2000-03-31', 85, 5);
 
 INSERT INTO users (user_id, user_email, user_login, user_name, user_birthday)
 VALUES (1, 'user@ya.ru', 'login', 'username', '1998-08-27');
+
+INSERT INTO events (event_id, user_id, time_stamp, event_type, operation, entity_id)
+VALUES (1, 1, 1670590017281, 'FRIEND', 'ADD', 2)
