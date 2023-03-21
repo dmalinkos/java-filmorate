@@ -1,6 +1,6 @@
 # DB Scheme
 
-![Untitled (2)](H:\NewSkills\Java\YP\sp12\fp\db-diag.png)
+![Untitled (2)](https://user-images.githubusercontent.com/112017515/226597634-26c28cde-09b7-4bb9-9a20-7695e7fd3293.png)
 
 <details><summary><h3>https://dbdiagram.io/d/64197b41296d97641d898bb0</h3></summary>
 
