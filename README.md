@@ -1,6 +1,6 @@
 # DB Scheme
 
-![Untitled (2)](\db-diag.png)
+![Untitled (2)](/db-diag.png)
 
 <details><summary><h3>https://dbdiagram.io/d/64197b41296d97641d898bb0</h3></summary>
 
