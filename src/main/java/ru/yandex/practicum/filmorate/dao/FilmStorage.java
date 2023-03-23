@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.dao;
 
-
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.ArrayList;
@@ -26,4 +25,14 @@ public interface FilmStorage {
     ArrayList<Film> getMostPopular(int n, Optional<Integer> genreId, Optional<Integer> year);
 
     List<Film> getDirectorFilms(Long directorId, String sortBy);
+
+    ArrayList<Film> getCommonFilms(Long userId, Long friendId);
+
+    List<Film> searchFilms(String query, String by);
+
+    List<Film> getListFilms(List<Long> filmList);
+
+    Film getFilmDirectors(Film film);
+
+    List<Film> getFilmsDirectors(List<Film> films);
 }
