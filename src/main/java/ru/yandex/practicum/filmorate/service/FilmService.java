@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.dao.FilmStorage;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -49,7 +50,7 @@ public class FilmService {
     }
 
     public Film unlike(Long filmId, Long userId) {
-        Film film = directorStorage.getFilmDirectors(filmStorage.unlike(filmId, userId));
+        Film film = filmStorage.getFilmDirectors(filmStorage.unlike(filmId, userId));
         eventDao.create(Event.builder()
                 .userId(userId)
                 .timestamp(Instant.now().toEpochMilli())
