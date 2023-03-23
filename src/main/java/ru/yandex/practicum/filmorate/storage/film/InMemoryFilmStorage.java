@@ -86,6 +86,16 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public Film getFilmDirectors(Film film) {
+        return null;
+    }
+
+    @Override
+    public List<Film> getFilmsDirectors(List<Film> films) {
+        return null;
+    }
+
+    @Override
     public Film like(Long filmId, Long userId) {
         Film film = findById(filmId);
         userStorage.findById(userId);

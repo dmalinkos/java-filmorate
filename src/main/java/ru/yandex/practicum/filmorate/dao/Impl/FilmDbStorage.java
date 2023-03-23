@@ -3,12 +3,16 @@ package ru.yandex.practicum.filmorate.dao.Impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.*;
 import ru.yandex.practicum.filmorate.exception.EntityNotExistException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.sql.Date;
@@ -198,6 +202,40 @@ public class FilmDbStorage implements FilmStorage {
         }
         return List.of();
     }
+
+    @Override
+    public Film getFilmDirectors(Film film) {
+        String sqlQuery = "SELECT director_id, director_name FROM directors WHERE director_id IN(" +
+                "SELECT director_id FROM film_directors WHERE film_id = ?)";
+        film.setDirectors(new ArrayList<>(jdbcTemplate.query(sqlQuery, this::mapRowToDirector, film.getId())));
+        return film;
+    }
+
+    @Override
+    public List<Film> getFilmsDirectors(List<Film> films) {
+        if (films.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        Map<Long, List<Director>> idToFilm = new LinkedHashMap<>();
+        for (Film film : films) {
+            idToFilm.put(film.getId(), film.getDirectors());
+        }
+
+        SqlParameterSource param = new MapSqlParameterSource("filmsId", idToFilm.keySet());
+        NamedParameterJdbcTemplate namedJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
+
+        String sqlQuery = "SELECT * FROM film_directors AS f " +
+                "INNER JOIN directors AS dir ON dir.director_id = f.director_id " +
+                "WHERE film_id IN(:filmsId)";
+
+        namedJdbcTemplate.query(sqlQuery, param,
+                (resultSet, rowNum) -> idToFilm.get(resultSet.getLong("film_id"))
+                        .add(mapRowToDirector(resultSet, rowNum)));
+
+        return new ArrayList<>(films);
+    }
+
     public void isExist(Long id) {
         String sql = "SELECT FILM_ID FROM FILMS WHERE FILM_ID = ?";
         SqlRowSet filmRow = jdbcTemplate.queryForRowSet(sql, id);
@@ -224,6 +262,13 @@ public class FilmDbStorage implements FilmStorage {
                 .genres(genreDao.getGenresFilm(id))
                 .likesSet(likes)
                 .directors(new ArrayList<>())
+                .build();
+    }
+
+    private Director mapRowToDirector(ResultSet resultSet, int rowNum) throws SQLException {
+        return Director.builder()
+                .id(resultSet.getLong("director_id"))
+                .name(resultSet.getString("director_name"))
                 .build();
     }
 
