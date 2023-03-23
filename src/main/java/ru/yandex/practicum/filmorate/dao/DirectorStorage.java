@@ -4,7 +4,6 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
-import java.util.List;
 
 public interface DirectorStorage {
     Director create(Director director);
@@ -16,10 +15,6 @@ public interface DirectorStorage {
     Director getDirector(Long directorId);
 
     Collection<Director> getDirectors();
-
-    Film getFilmDirectors(Film film);
-
-    List<Film> getFilmsDirectors(List<Film> films);
 
     Film updateFilmDirectors(Film film);
 
