@@ -9,10 +9,12 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
+import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.dao.ReviewDao;
 import ru.yandex.practicum.filmorate.exception.EntityNotExistException;
 import ru.yandex.practicum.filmorate.model.Review;
 
+import javax.validation.constraints.NotNull;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -23,17 +25,18 @@ import java.util.Map;
 @Repository
 @Primary
 @RequiredArgsConstructor
+@Validated
 public class ReviewDBStorage implements ReviewDao {
 
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public Review add(Review review) {
+    public Review add(@NotNull Review review) {
         log.info("Обработка SQL-запроса создания отзыва. Пользователь с {}; фильм с {}",
-                                                                        review.getUserId(), review.getFilmId());
+                review.getUserId(), review.getFilmId());
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
-                                                .withTableName("reviews")
-                                                .usingGeneratedKeyColumns("review_id");
+                .withTableName("reviews")
+                .usingGeneratedKeyColumns("review_id");
         try {
             Long newId = simpleJdbcInsert.executeAndReturnKey(reviewToMap(review)).longValue();
             log.info("В БД добавлена запись об отзыве. id {}", newId);
@@ -46,14 +49,14 @@ public class ReviewDBStorage implements ReviewDao {
     }
 
     @Override
-    public Review readByReviewId(Long id) {
+    public Review readByReviewId(@NotNull Long id) {
         log.info("Обработка SQL-запроса получения отзыва с id {}", id);
         String sqlQuery = "SELECT r.*, "
-                        + "COALESCE(SUM(rt.rate_value), 0) AS useful "
-                        + "FROM reviews AS r "
-                        + "LEFT OUTER JOIN review_rates AS rt ON rt.review_id = r.review_id "
-                        + "WHERE r.review_id = ? "
-                        + "GROUP BY r.review_id;";
+                + "COALESCE(SUM(rt.rate_value), 0) AS useful "
+                + "FROM reviews AS r "
+                + "LEFT OUTER JOIN review_rates AS rt ON rt.review_id = r.review_id "
+                + "WHERE r.review_id = ? "
+                + "GROUP BY r.review_id;";
         try {
             return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToReview, id);
         } catch (EmptyResultDataAccessException e) {
@@ -66,18 +69,18 @@ public class ReviewDBStorage implements ReviewDao {
     }
 
     @Override
-    public Review update(Review review) {
+    public Review update(@NotNull Review review) {
         Long reviewId = review.getReviewId();
         log.info("Обработка SQL-запроса обновления отзыва с id {}", reviewId);
         String sqlQuery = "UPDATE reviews "
-                        + "SET content = ?, "
-                        + "is_positive = ? "
-                        + "WHERE review_id = ?;";
+                + "SET content = ?, "
+                + "is_positive = ? "
+                + "WHERE review_id = ?;";
         try {
             int affectedRows = jdbcTemplate.update(sqlQuery
-                                                   , review.getContent()
-                                                   , review.getIsPositive()
-                                                   , reviewId);
+                    , review.getContent()
+                    , review.getIsPositive()
+                    , reviewId);
             if (affectedRows == 1) {
                 log.info("отзыв-id {} обновлен", reviewId);
                 return readByReviewId(reviewId);
@@ -95,7 +98,7 @@ public class ReviewDBStorage implements ReviewDao {
     }
 
     @Override
-    public Review deleteById(Long id) {
+    public Review deleteById(@NotNull Long id) {
         log.info("Обработка SQL-запроса удаления отзыва. Id: {}", id);
         Review review;
         String sqlQuery = "DELETE FROM reviews WHERE review_id = ?;";
@@ -113,20 +116,15 @@ public class ReviewDBStorage implements ReviewDao {
     }
 
     @Override
-    public Review setNewRateOfUser(Long userId, Long reviewId, Integer newRate) {
+    public Review setNewRateOfUser(@NotNull Long userId, @NotNull Long reviewId, @NotNull Integer newRate) {
         log.info("Обработка SQL-запроса добавления оценки {} отзыва с id: {} пользователем с id: {}"
                 , newRate, reviewId, userId);
         try {
-            String sqlDeleteQuery = "DELETE FROM review_rates WHERE rated_by_id = ? AND review_id = ?;";
-            int affectedReviewLikesRows = jdbcTemplate.update(sqlDeleteQuery , userId, reviewId);
+            String sqlInsertQuery = "MERGE INTO review_rates KEY (review_id, rated_by_id) "
+                                    + "VALUES (?, ?, ?);";
+            int affectedReviewLikesRows = jdbcTemplate.update(sqlInsertQuery, reviewId, userId, newRate);
             if (affectedReviewLikesRows == 1) {
-                log.info("при добавлении оценки отзыва в БД обновляется существующая оценка");
-            }
-            String sqlInsertQuery = "INSERT INTO review_rates (review_id, rated_by_id, rate_value) "
-                                  + "VALUES (?, ?, ?);";
-            affectedReviewLikesRows = jdbcTemplate.update(sqlInsertQuery, reviewId, userId, newRate);
-            if (affectedReviewLikesRows == 1) {
-                log.info("Оценка отзыва добавлена в БД");
+                log.info("Оценка отзыва добавлена/обновлена в БД");
                 return readByReviewId(reviewId);
             }
             throw new RuntimeException("Ошибка добавления оценки отзыва в БД");
@@ -138,7 +136,7 @@ public class ReviewDBStorage implements ReviewDao {
     }
 
     @Override
-    public Review deleteRateFromUser(Long userId, Long reviewId) {
+    public Review deleteRateFromUser(@NotNull Long userId, @NotNull Long reviewId) {
         log.info("Обработка SQL-запроса удаления оценки отзыва с id: {} пользователем с id: {}", userId, reviewId);
         try {
             String sqlDeleteQuery = "DELETE FROM review_rates WHERE rated_by_id = ? AND review_id = ?;";
@@ -156,16 +154,16 @@ public class ReviewDBStorage implements ReviewDao {
     }
 
     @Override
-    public List<Review> getTopRatedReviews(Integer count) {
+    public List<Review> getTopRatedReviews(@NotNull Integer count) {
         log.info("Обработка SQL-запроса получения списка {} отзывов, отсортированных по рейтингу полезности"
                 , count);
         String sqlQuery = "SELECT r.*, "
-                        + "COALESCE(SUM(rt.rate_value), 0) AS useful "
-                        + "FROM reviews AS r "
-                        + "LEFT OUTER JOIN review_rates AS rt ON rt.review_id = r.review_id "
-                        + "GROUP BY r.review_id "
-                        + "ORDER BY useful DESC "
-                        + "LIMIT ?;";
+                + "COALESCE(SUM(rt.rate_value), 0) AS useful "
+                + "FROM reviews AS r "
+                + "LEFT OUTER JOIN review_rates AS rt ON rt.review_id = r.review_id "
+                + "GROUP BY r.review_id "
+                + "ORDER BY useful DESC "
+                + "LIMIT ?;";
         try {
             return jdbcTemplate.query(sqlQuery, this::mapRowToReview, count);
         } catch (DataAccessException dae) {
@@ -174,17 +172,17 @@ public class ReviewDBStorage implements ReviewDao {
     }
 
     @Override
-    public List<Review> getTopRatedReviewsByFilmId(Long filmId, Integer count) {
+    public List<Review> getTopRatedReviewsByFilmId(@NotNull Long filmId, @NotNull Integer count) {
         log.info("Обработка SQL-запроса получения списка {} отзывов для filmId {}, отсортированных по рейтингу полезности"
                 , count, filmId);
         String sqlQuery = "SELECT r.*, "
-                        + "COALESCE(SUM(rt.rate_value), 0) AS useful "
-                        + "FROM reviews AS r "
-                        + "LEFT OUTER JOIN review_rates AS rt ON rt.review_id = r.review_id "
-                        + "WHERE r.film_id = ? "
-                        + "GROUP BY r.review_id "
-                        + "ORDER BY useful DESC "
-                        + "LIMIT ?;";
+                + "COALESCE(SUM(rt.rate_value), 0) AS useful "
+                + "FROM reviews AS r "
+                + "LEFT OUTER JOIN review_rates AS rt ON rt.review_id = r.review_id "
+                + "WHERE r.film_id = ? "
+                + "GROUP BY r.review_id "
+                + "ORDER BY useful DESC "
+                + "LIMIT ?;";
         try {
             return jdbcTemplate.query(sqlQuery, this::mapRowToReview, filmId, count);
         } catch (DataAccessException dae) {
