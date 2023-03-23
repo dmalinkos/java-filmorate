@@ -164,7 +164,40 @@ public class FilmDbStorage implements FilmStorage {
             return new ArrayList<>();
         }
     }
+    @Override
+    public ArrayList<Film> getCommonFilms(Long userId, Long friendId) {
+        String sql ="SELECT f.* FROM films AS f " +
+                "LEFT JOIN likes AS fl ON f.film_id = fl.film_id " +
+                "WHERE fl.film_id IN (SELECT film_id FROM likes WHERE user_id = ?) " +
+                "AND fl.film_id IN (SELECT film_id FROM likes WHERE user_id = ?) " +
+                "GROUP BY fl.film_id " +
+                "ORDER BY COUNT(fl.user_id) DESC";
+        return new ArrayList<>(jdbcTemplate.query(sql, this::mapRowToFilm,userId,friendId));
+    }
 
+    @Override
+    public List<Film> searchFilms(String query, String by) {
+        String searchQuery = "%" + query + "%";
+        String sqlQuery = "SELECT f.* " +
+                "FROM films f " +
+                "LEFT JOIN likes lf ON f.film_id = lf.film_id " +
+                "LEFT JOIN film_directors fd on f.film_id = fd.film_id " +
+                "LEFT JOIN directors d on d.director_id = fd.director_id " +
+                "WHERE %s " +
+                "GROUP BY f.film_id " +
+                "ORDER BY COUNT(lf.user_id) DESC";
+        if(by.contains("director") && by.contains("title")){
+            String sql = String.format(sqlQuery,"LOWER(f.film_name) LIKE LOWER(?) OR LOWER(d.director_name) LIKE LOWER(?)");
+            return new ArrayList<>(jdbcTemplate.query(sql, this::mapRowToFilm,  searchQuery, searchQuery));
+        } else if (by.contains("director")) {
+            String sql = String.format(sqlQuery,"LOWER(d.director_name) LIKE LOWER(?)");
+            return new ArrayList<>(jdbcTemplate.query(sql, this::mapRowToFilm,  searchQuery));
+        } else if (by.contains("title")) {
+            String sql = String.format(sqlQuery,"LOWER(f.film_name) LIKE LOWER(?)");
+            return new ArrayList<>(jdbcTemplate.query(sql, this::mapRowToFilm,  searchQuery));
+        }
+        return List.of();
+    }
     public void isExist(Long id) {
         String sql = "SELECT FILM_ID FROM FILMS WHERE FILM_ID = ?";
         SqlRowSet filmRow = jdbcTemplate.queryForRowSet(sql, id);
