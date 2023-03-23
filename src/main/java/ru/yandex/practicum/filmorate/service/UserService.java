@@ -2,6 +2,8 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.algorithms.recommendation.SimpleRecommendations;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.dao.EventDao;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.EventType;
@@ -23,6 +25,8 @@ public class UserService {
 
     private final UserStorage userStorage;
     private final EventDao eventDao;
+
+    private final SimpleRecommendations simpleRecommendations;
 
     public User add(User user) {
         return userStorage.add(user);
@@ -88,6 +92,11 @@ public class UserService {
         return (ArrayList<User>) userStorage.findAll().stream()
                 .filter(v -> friendsSet.contains(v.getId()))
                 .collect(Collectors.toList());
+    }
+
+
+    public List<Film> getRecommendations(Long id) {
+        return simpleRecommendations.getListOfRecommendedFilms(id);
     }
 
     public List<Event> getFeed(long userId) {

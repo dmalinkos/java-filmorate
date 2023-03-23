@@ -3,9 +3,6 @@ package ru.yandex.practicum.filmorate.dao.Impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.DirectorStorage;
@@ -17,7 +14,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -72,40 +68,6 @@ public class DirectorDbStorage implements DirectorStorage {
     public Collection<Director> getDirectors() {
         String sqlQuery = "SELECT * FROM directors";
         return jdbcTemplate.query(sqlQuery, this::mapRowToDirector);
-    }
-
-    @Override
-    public Film getFilmDirectors(Film film) {
-        String sqlQuery = "SELECT director_id, director_name FROM directors WHERE director_id IN(" +
-                "SELECT director_id FROM film_directors WHERE film_id = ?)";
-        film.setDirectors(new ArrayList<>(jdbcTemplate.query(sqlQuery, this::mapRowToDirector, film.getId())));
-        return film;
-    }
-
-    @Override
-    public List<Film> getFilmsDirectors(List<Film> films) {
-        if (films.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        List<Long> filmsId = films.stream().map(Film::getId).collect(Collectors.toList());
-        Map<Long, Film> idToFilm = new LinkedHashMap<>();
-        for (Film film : films) {
-            idToFilm.put(film.getId(), film);
-        }
-
-        SqlParameterSource param = new MapSqlParameterSource("filmsId", filmsId);
-        NamedParameterJdbcTemplate namedJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
-
-        String sqlQuery = "SELECT * FROM film_directors AS f " +
-                "INNER JOIN directors AS dir ON dir.director_id = f.director_id " +
-                "WHERE film_id IN(:filmsId)";
-
-        namedJdbcTemplate.query(sqlQuery, param,
-                (resultSet, rowNum) -> idToFilm.get(resultSet.getLong("film_id")).getDirectors()
-                        .add(mapRowToDirector(resultSet, rowNum)));
-
-        return new ArrayList<>(idToFilm.values());
     }
 
     @Override

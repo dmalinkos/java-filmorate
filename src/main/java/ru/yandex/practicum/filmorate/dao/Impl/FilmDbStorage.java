@@ -3,12 +3,16 @@ package ru.yandex.practicum.filmorate.dao.Impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.*;
 import ru.yandex.practicum.filmorate.exception.EntityNotExistException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.sql.Date;
@@ -114,6 +118,17 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public List<Film> getListFilms(List<Long> filmList) {
+        String inSql = String.join(",", Collections.nCopies(filmList.size(), "?"));
+
+        List<Film> lf = jdbcTemplate.query(
+                String.format("SELECT * FROM films WHERE film_id IN (%s)", inSql),
+                filmList.toArray(),
+                this::mapRowToFilm);
+        return lf;
+    }
+
+    @Override
     public ArrayList<Film> getMostPopular(int n, Optional<Integer> genreId, Optional<Integer> year) {
         String query = null;
         String sql = "SELECT f.* " +
@@ -167,6 +182,73 @@ public class FilmDbStorage implements FilmStorage {
             return new ArrayList<>();
         }
     }
+    @Override
+    public ArrayList<Film> getCommonFilms(Long userId, Long friendId) {
+        String sql ="SELECT f.* FROM films AS f " +
+                "LEFT JOIN likes AS fl ON f.film_id = fl.film_id " +
+                "WHERE fl.film_id IN (SELECT film_id FROM likes WHERE user_id = ?) " +
+                "AND fl.film_id IN (SELECT film_id FROM likes WHERE user_id = ?) " +
+                "GROUP BY fl.film_id " +
+                "ORDER BY COUNT(fl.user_id) DESC";
+        return new ArrayList<>(jdbcTemplate.query(sql, this::mapRowToFilm,userId,friendId));
+    }
+
+    @Override
+    public List<Film> searchFilms(String query, String by) {
+        String searchQuery = "%" + query + "%";
+        String sqlQuery = "SELECT f.* " +
+                "FROM films f " +
+                "LEFT JOIN likes lf ON f.film_id = lf.film_id " +
+                "LEFT JOIN film_directors fd on f.film_id = fd.film_id " +
+                "LEFT JOIN directors d on d.director_id = fd.director_id " +
+                "WHERE %s " +
+                "GROUP BY f.film_id " +
+                "ORDER BY COUNT(lf.user_id) DESC";
+        if(by.contains("director") && by.contains("title")){
+            String sql = String.format(sqlQuery,"LOWER(f.film_name) LIKE LOWER(?) OR LOWER(d.director_name) LIKE LOWER(?)");
+            return new ArrayList<>(jdbcTemplate.query(sql, this::mapRowToFilm,  searchQuery, searchQuery));
+        } else if (by.contains("director")) {
+            String sql = String.format(sqlQuery,"LOWER(d.director_name) LIKE LOWER(?)");
+            return new ArrayList<>(jdbcTemplate.query(sql, this::mapRowToFilm,  searchQuery));
+        } else if (by.contains("title")) {
+            String sql = String.format(sqlQuery,"LOWER(f.film_name) LIKE LOWER(?)");
+            return new ArrayList<>(jdbcTemplate.query(sql, this::mapRowToFilm,  searchQuery));
+        }
+        return List.of();
+    }
+
+    @Override
+    public Film getFilmDirectors(Film film) {
+        String sqlQuery = "SELECT director_id, director_name FROM directors WHERE director_id IN(" +
+                "SELECT director_id FROM film_directors WHERE film_id = ?)";
+        film.setDirectors(new ArrayList<>(jdbcTemplate.query(sqlQuery, this::mapRowToDirector, film.getId())));
+        return film;
+    }
+
+    @Override
+    public List<Film> getFilmsDirectors(List<Film> films) {
+        if (films.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        Map<Long, List<Director>> idToFilm = new LinkedHashMap<>();
+        for (Film film : films) {
+            idToFilm.put(film.getId(), film.getDirectors());
+        }
+
+        SqlParameterSource param = new MapSqlParameterSource("filmsId", idToFilm.keySet());
+        NamedParameterJdbcTemplate namedJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
+
+        String sqlQuery = "SELECT * FROM film_directors AS f " +
+                "INNER JOIN directors AS dir ON dir.director_id = f.director_id " +
+                "WHERE film_id IN(:filmsId)";
+
+        namedJdbcTemplate.query(sqlQuery, param,
+                (resultSet, rowNum) -> idToFilm.get(resultSet.getLong("film_id"))
+                        .add(mapRowToDirector(resultSet, rowNum)));
+
+        return new ArrayList<>(films);
+    }
 
     public void isExist(Long id) {
         String sql = "SELECT FILM_ID FROM FILMS WHERE FILM_ID = ?";
@@ -194,6 +276,13 @@ public class FilmDbStorage implements FilmStorage {
                 .genres(genreDao.getGenresFilm(id))
                 .likesSet(likes)
                 .directors(new ArrayList<>())
+                .build();
+    }
+
+    private Director mapRowToDirector(ResultSet resultSet, int rowNum) throws SQLException {
+        return Director.builder()
+                .id(resultSet.getLong("director_id"))
+                .name(resultSet.getString("director_name"))
                 .build();
     }
 
