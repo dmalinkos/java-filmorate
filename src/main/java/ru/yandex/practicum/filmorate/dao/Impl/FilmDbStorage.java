@@ -106,7 +106,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public ArrayList<Film> findAll() {
+    public List<Film> findAll() {
         return new ArrayList<>(jdbcTemplate.query("SELECT * FROM films", this::mapRowToFilm));
     }
 
@@ -121,15 +121,14 @@ public class FilmDbStorage implements FilmStorage {
     public List<Film> getListFilms(List<Long> filmList) {
         String inSql = String.join(",", Collections.nCopies(filmList.size(), "?"));
 
-        List<Film> lf = jdbcTemplate.query(
+        return jdbcTemplate.query(
                 String.format("SELECT * FROM films WHERE film_id IN (%s)", inSql),
                 filmList.toArray(),
                 this::mapRowToFilm);
-        return lf;
     }
 
     @Override
-    public ArrayList<Film> getMostPopular(int n, Optional<Integer> genreId, Optional<Integer> year) {
+    public List<Film> getMostPopular(int n, Optional<Integer> genreId, Optional<Integer> year) {
         String query = null;
         String sql = "SELECT f.* " +
                 "FROM films AS f " +
@@ -183,7 +182,7 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
     @Override
-    public ArrayList<Film> getCommonFilms(Long userId, Long friendId) {
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
         String sql ="SELECT f.* FROM films AS f " +
                 "LEFT JOIN likes AS fl ON f.film_id = fl.film_id " +
                 "WHERE fl.film_id IN (SELECT film_id FROM likes WHERE user_id = ?) " +

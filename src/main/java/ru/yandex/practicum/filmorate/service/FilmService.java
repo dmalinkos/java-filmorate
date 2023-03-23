@@ -61,8 +61,8 @@ public class FilmService {
         return film;
     }
 
-    public ArrayList<Film> getMostPopular(int n) {
-        return new ArrayList<>(filmStorage.getFilmsDirectors(filmStorage.getMostPopular(n)));
+    public ArrayList<Film> getMostPopular(int n, Optional<Integer> genreId, Optional<Integer> year) {
+        return new ArrayList<>(filmStorage.getFilmsDirectors(filmStorage.getMostPopular(n, genreId, year)));
     }
 
     public ArrayList<Film> findAll() {
