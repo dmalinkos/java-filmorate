@@ -13,13 +13,6 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * Реализовать простую рекомендательную систему для фильмов. Примерный алгоритм выглядит следующим образом:
- * 1. Найти пользователей с максимальным количеством пересечения по лайкам.
- * 2. Определить фильмы, которые один пролайкал, а другой нет.
- * 3. Рекомендовать фильмы, которым поставил лайк пользователь с похожими вкусами, а тот, для кого составляется
- *    рекомендация, ещё не поставил.
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -31,7 +24,7 @@ public class SimpleRecommendations {
     public List<Film> getListOfRecommendedFilms(Long id) {
 
         List<Like> tableOfLikes = jdbcTemplate.query("SELECT * FROM likes", this::mapRowToLike);
-        HashMap<Long, List<Long>> collectionOfLikes = makeCollectionOfLike(tableOfLikes);
+        Map<Long, List<Long>> collectionOfLikes = makeCollectionOfLike(tableOfLikes);
         List<Long> listOfRecommendations = makeRecommendationsList(collectionOfLikes, id);
 
         if (listOfRecommendations.size() > 0) {
@@ -41,8 +34,8 @@ public class SimpleRecommendations {
         return new ArrayList<>();
     }
 
-    private HashMap<Long, List<Long>> makeCollectionOfLike(List<Like> likesList) {
-        HashMap<Long, List<Long>> collectionOfLikes = new HashMap<>();
+    private Map<Long, List<Long>> makeCollectionOfLike(List<Like> likesList) {
+        Map<Long, List<Long>> collectionOfLikes = new HashMap<>();
 
         for (var like : likesList) {
             Long userId = like.getUserId();
@@ -57,7 +50,7 @@ public class SimpleRecommendations {
         return collectionOfLikes;
     }
 
-    private List<Long> makeRecommendationsList(HashMap<Long, List<Long>> aggLikes, Long userId) {
+    private List<Long> makeRecommendationsList(Map<Long, List<Long>> aggLikes, Long userId) {
 
         long count;
         long maxCount = 0L;
