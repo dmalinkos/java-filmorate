@@ -58,7 +58,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public ArrayList<Film> getMostPopular(int n) {
+    public ArrayList<Film> getMostPopular(int n, Optional<Integer> genreId, Optional<Integer> year) {
         return (ArrayList<Film>) films.values().stream()
                 .sorted(Comparator.comparingInt(f -> -f.getLikesSet().size()))
                 .limit(n)

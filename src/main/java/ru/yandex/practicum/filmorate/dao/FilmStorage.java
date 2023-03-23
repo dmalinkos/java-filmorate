@@ -5,6 +5,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public interface FilmStorage {
 
@@ -22,7 +23,7 @@ public interface FilmStorage {
 
     Film findById(Long id);
 
-    ArrayList<Film> getMostPopular(int n);
+    ArrayList<Film> getMostPopular(int n, Optional<Integer> genreId, Optional<Integer> year);
 
     List<Film> getDirectorFilms(Long directorId, String sortBy);
 }
