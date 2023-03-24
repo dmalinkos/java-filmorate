@@ -36,6 +36,7 @@ public class FilmDbStorage implements FilmStorage {
         String sql = "INSERT INTO films (film_name, film_description, film_releaseDate, film_duration, mpa_id) " +
                 "VALUES (?, ?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
+
         jdbcTemplate.update(con -> {
             PreparedStatement ps = con.prepareStatement(sql,
                     new String[]{"film_id"});
