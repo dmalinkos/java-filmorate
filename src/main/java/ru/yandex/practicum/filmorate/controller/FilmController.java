@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/films")
@@ -45,8 +46,10 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public ArrayList<Film> getMostPopular(@RequestParam(required = false, defaultValue = "10") Integer count) {
-        return filmService.getMostPopular(count);
+    public ArrayList<Film> getMostPopular(@RequestParam(required = false, defaultValue = "10") Integer count,
+                                          @RequestParam(required = false) Optional<Integer> genreId,
+                                          @RequestParam(required = false) Optional<Integer> year) {
+        return filmService.getMostPopular(count, genreId, year);
     }
 
     @PutMapping("/{id}/like/{userId}")

@@ -107,7 +107,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public ArrayList<Film> findAll() {
+    public List<Film> findAll() {
         return new ArrayList<>(jdbcTemplate.query("SELECT * FROM films", this::mapRowToFilm));
     }
 
@@ -122,22 +122,35 @@ public class FilmDbStorage implements FilmStorage {
     public List<Film> getListFilms(List<Long> filmList) {
         String inSql = String.join(",", Collections.nCopies(filmList.size(), "?"));
 
-        List<Film> lf = jdbcTemplate.query(
+        return jdbcTemplate.query(
                 String.format("SELECT * FROM films WHERE film_id IN (%s)", inSql),
                 filmList.toArray(),
                 this::mapRowToFilm);
-        return lf;
     }
 
     @Override
-    public ArrayList<Film> getMostPopular(int n) {
+    public List<Film> getMostPopular(int n, Optional<Integer> genreId, Optional<Integer> year) {
+        String query = null;
         String sql = "SELECT f.* " +
-                "FROM likes AS l " +
-                "RIGHT JOIN FILMS f on f.FILM_ID = L.FILM_ID " +
-                "GROUP BY f.film_id " +
-                "ORDER BY COUNT(l.user_id) DESC " +
-                "LIMIT ?";
-        return new ArrayList<>(jdbcTemplate.query(sql, this::mapRowToFilm, n));
+                "FROM films AS f " +
+                "LEFT JOIN (SELECT film_id, COUNT(Distinct USER_ID) as rating " +
+                "FROM likes GROUP BY film_id) as l ON f.FILM_ID = l.FILM_ID ";
+        String sqlGenreJoin = "LEFT JOIN FILM_GENRES AS fg on f.FILM_ID = fg.FILM_ID ";
+        String sqlYear = "WHERE EXTRACT(YEAR FROM f.film_releaseDate) = ? ";
+        String sqlGenre = "fg.GENRE_ID = ? ";
+        String sqlOrder = "ORDER BY l.rating DESC LIMIT ? ";
+        if (genreId.isPresent() && year.isPresent()) {
+            query = sql + sqlGenreJoin + sqlYear  + "AND " + sqlGenre + sqlOrder;
+            return new ArrayList<>(jdbcTemplate.query(query, this::mapRowToFilm, year.get(), genreId.get().longValue(), n));
+        } if (genreId.isPresent()) {
+            query = sql + sqlGenreJoin + "WHERE " + sqlGenre + sqlOrder;
+            return new ArrayList<>(jdbcTemplate.query(query, this::mapRowToFilm, genreId.get().longValue(), n));
+        } if (year.isPresent()) {
+            query = sql + sqlYear + sqlOrder;
+            return new ArrayList<>(jdbcTemplate.query(query, this::mapRowToFilm, year.get(), n));
+        }
+        query = sql + sqlOrder ;
+        return new ArrayList<>(jdbcTemplate.query(query, this::mapRowToFilm, n));
     }
 
     @Override
@@ -170,7 +183,7 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
     @Override
-    public ArrayList<Film> getCommonFilms(Long userId, Long friendId) {
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
         String sql ="SELECT f.* FROM films AS f " +
                 "LEFT JOIN likes AS fl ON f.film_id = fl.film_id " +
                 "WHERE fl.film_id IN (SELECT film_id FROM likes WHERE user_id = ?) " +
