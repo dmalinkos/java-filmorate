@@ -193,10 +193,10 @@ public class FilmDbStorage implements FilmStorage {
             return new ArrayList<>();
         }
     }
-    
+
     @Override
     public List<Film> getCommonFilms(Long userId, Long friendId) {
-        String sql ="SELECT f.* FROM films AS f " +
+        String sql = "SELECT f.* FROM films AS f " +
                 "LEFT JOIN likes AS fl ON f.film_id = fl.film_id " +
                 "WHERE fl.film_id IN (SELECT film_id FROM likes WHERE user_id = ?) " +
                 "AND fl.film_id IN (SELECT film_id FROM likes WHERE user_id = ?) " +
