@@ -30,7 +30,6 @@ public class FilmDbStorage implements FilmStorage {
     private final MpaDao mpaDao;
     private final GenreDao genreDao;
     private final UserStorage userStorage;
-
     private final DirectorStorage directorStorage;
 
     private static final String SQL_FIND_WHERE = "SELECT f.* " +
@@ -41,12 +40,12 @@ public class FilmDbStorage implements FilmStorage {
             "WHERE %s" +
             "GROUP BY f.film_id " +
             "ORDER BY COUNT(lf.user_id) DESC";
+
     @Override
     public Film add(Film film) {
         String sql = "INSERT INTO films (film_name, film_description, film_releaseDate, film_duration, mpa_id) " +
                 "VALUES (?, ?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
-
         jdbcTemplate.update(con -> {
             PreparedStatement ps = con.prepareStatement(sql,
                     new String[]{"film_id"});
@@ -194,6 +193,7 @@ public class FilmDbStorage implements FilmStorage {
             return new ArrayList<>();
         }
     }
+    
     @Override
     public List<Film> getCommonFilms(Long userId, Long friendId) {
         String sql ="SELECT f.* FROM films AS f " +
