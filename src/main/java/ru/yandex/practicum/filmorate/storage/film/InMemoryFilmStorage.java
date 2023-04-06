@@ -7,10 +7,7 @@ import ru.yandex.practicum.filmorate.exception.EntityNotExistException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.dao.UserStorage;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -43,7 +40,12 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public ArrayList<Film> findAll() {
+    public Film delete(Long filmId) {
+        return null;
+    }
+
+    @Override
+    public List<Film> findAll() {
         return new ArrayList<>(films.values());
     }
 
@@ -56,11 +58,41 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public ArrayList<Film> getMostPopular(int n) {
-        return (ArrayList<Film>) films.values().stream()
+    public List<Film> getMostPopular(int n, Optional<Integer> genreId, Optional<Integer> year) {
+        return films.values().stream()
                 .sorted(Comparator.comparingInt(f -> -f.getLikesSet().size()))
                 .limit(n)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Film> getDirectorFilms(Long directorId, String sortBy) {
+        return null;
+    }
+
+    @Override
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        return null;
+    }
+
+    @Override
+    public List<Film> searchFilms(String query, String by) {
+        return null;
+    }
+
+    @Override
+    public List<Film> getListFilms(List<Long> filmList) {
+        return null;
+    }
+
+    @Override
+    public Film getFilmDirectors(Film film) {
+        return null;
+    }
+
+    @Override
+    public List<Film> getFilmsDirectors(List<Film> films) {
+        return null;
     }
 
     @Override

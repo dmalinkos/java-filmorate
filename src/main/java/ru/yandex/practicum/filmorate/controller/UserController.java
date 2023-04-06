@@ -3,6 +3,8 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.service.UserService;
@@ -10,6 +12,7 @@ import ru.yandex.practicum.filmorate.service.UserService;
 import javax.validation.Valid;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/users")
@@ -28,6 +31,11 @@ public class UserController {
     @PutMapping
     public User update(@Valid @RequestBody User user) {
         return userService.update(user);
+    }
+
+    @DeleteMapping("/{id}")
+    public User delete(@PathVariable("id") Long userId) {
+        return userService.delete(userId);
     }
 
     @GetMapping
@@ -64,5 +72,16 @@ public class UserController {
             @PathVariable(value = "id") Long userId,
             @PathVariable Long friendId) {
         return userService.removeFriend(userId, friendId);
+    }
+
+    @GetMapping("/{id}/recommendations")
+    public List<Film> getRecommendations(@PathVariable Long id) {
+        log.info("GET-запрос /recommendations (получение рекомендаций). userId-id: {}", id);
+        return userService.getRecommendations(id);
+    }
+
+    @GetMapping("/{id}/feed")
+    public ArrayList<Event> getFeed(@PathVariable Long id) {
+        return new ArrayList<>(userService.getFeed(id));
     }
 }
