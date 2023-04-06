@@ -10,7 +10,10 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.dao.*;
+import ru.yandex.practicum.filmorate.dao.FilmStorage;
+import ru.yandex.practicum.filmorate.dao.GenreDao;
+import ru.yandex.practicum.filmorate.dao.MpaDao;
+import ru.yandex.practicum.filmorate.dao.UserStorage;
 import ru.yandex.practicum.filmorate.exception.EntityNotExistException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -140,27 +143,29 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getMostPopular(int n, Optional<Integer> genreId, Optional<Integer> year) {
-        String query = null;
-        String sql = "SELECT f.* " +
-                "FROM films AS f " +
-                "LEFT JOIN (SELECT film_id, COUNT(Distinct USER_ID) as rating " +
-                "FROM likes GROUP BY film_id) as l ON f.FILM_ID = l.FILM_ID ";
-        String sqlGenreJoin = "LEFT JOIN FILM_GENRES AS fg on f.FILM_ID = fg.FILM_ID ";
-        String sqlYear = "WHERE EXTRACT(YEAR FROM f.film_releaseDate) = ? ";
-        String sqlGenre = "fg.GENRE_ID = ? ";
-        String sqlOrder = "ORDER BY l.rating DESC LIMIT ? ";
-        if (genreId.isPresent() && year.isPresent()) {
-            query = sql + sqlGenreJoin + sqlYear  + "AND " + sqlGenre + sqlOrder;
-            return new ArrayList<>(jdbcTemplate.query(query, this::mapRowToFilm, year.get(), genreId.get().longValue(), n));
-        } if (genreId.isPresent()) {
-            query = sql + sqlGenreJoin + "WHERE " + sqlGenre + sqlOrder;
-            return new ArrayList<>(jdbcTemplate.query(query, this::mapRowToFilm, genreId.get().longValue(), n));
-        } if (year.isPresent()) {
-            query = sql + sqlYear + sqlOrder;
-            return new ArrayList<>(jdbcTemplate.query(query, this::mapRowToFilm, year.get(), n));
+        StringBuilder query = new StringBuilder();
+        List<Object> params = new ArrayList<>();
+        query.append("SELECT f.* ")
+                .append("FROM films AS f ")
+                .append("LEFT JOIN (SELECT film_id, COUNT(Distinct USER_ID) as rating ")
+                .append("FROM likes GROUP BY film_id) as l ON f.FILM_ID = l.FILM_ID ");
+        if (genreId.isPresent()) {
+            query.append("LEFT JOIN FILM_GENRES AS fg on f.FILM_ID = fg.FILM_ID ");
         }
-        query = sql + sqlOrder ;
-        return new ArrayList<>(jdbcTemplate.query(query, this::mapRowToFilm, n));
+        boolean whereAdded = false;
+        if (year.isPresent()) {
+            query.append("WHERE EXTRACT(YEAR FROM f.film_releaseDate) = ? ");
+            params.add(year.get());
+            whereAdded = true;
+        }
+        if (genreId.isPresent()) {
+            query.append(whereAdded ? "AND " : "WHERE ")
+                    .append("fg.GENRE_ID = ? ");
+            params.add(genreId.get().longValue());
+        }
+        query.append("ORDER BY l.rating DESC LIMIT ? ");
+        params.add(n);
+        return new ArrayList<>(jdbcTemplate.query(query.toString(), this::mapRowToFilm, params.toArray()));
     }
 
     @Override
