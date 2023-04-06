@@ -77,10 +77,10 @@ public class ReviewDBStorage implements ReviewDao {
                 + "is_positive = ? "
                 + "WHERE review_id = ?;";
         try {
-            int affectedRows = jdbcTemplate.update(sqlQuery
-                    , review.getContent()
-                    , review.getIsPositive()
-                    , reviewId);
+            int affectedRows = jdbcTemplate.update(sqlQuery,
+                    review.getContent(),
+                    review.getIsPositive(),
+                    reviewId);
             if (affectedRows == 1) {
                 log.info("отзыв-id {} обновлен", reviewId);
                 return readByReviewId(reviewId);
@@ -117,11 +117,13 @@ public class ReviewDBStorage implements ReviewDao {
 
     @Override
     public Review setNewRateOfUser(@NotNull Long userId, @NotNull Long reviewId, @NotNull Integer newRate) {
-        log.info("Обработка SQL-запроса добавления оценки {} отзыва с id: {} пользователем с id: {}"
-                , newRate, reviewId, userId);
+        log.info("Обработка SQL-запроса добавления оценки {} отзыва с id: {} пользователем с id: {}",
+                newRate,
+                reviewId,
+                userId);
         try {
             String sqlInsertQuery = "MERGE INTO review_rates KEY (review_id, rated_by_id) "
-                                    + "VALUES (?, ?, ?);";
+                    + "VALUES (?, ?, ?);";
             int affectedReviewLikesRows = jdbcTemplate.update(sqlInsertQuery, reviewId, userId, newRate);
             if (affectedReviewLikesRows == 1) {
                 log.info("Оценка отзыва добавлена/обновлена в БД");
@@ -155,8 +157,8 @@ public class ReviewDBStorage implements ReviewDao {
 
     @Override
     public List<Review> getTopRatedReviews(@NotNull Integer count) {
-        log.info("Обработка SQL-запроса получения списка {} отзывов, отсортированных по рейтингу полезности"
-                , count);
+        log.info("Обработка SQL-запроса получения списка {} отзывов, отсортированных по рейтингу полезности",
+                count);
         String sqlQuery = "SELECT r.*, "
                 + "COALESCE(SUM(rt.rate_value), 0) AS useful "
                 + "FROM reviews AS r "
@@ -173,8 +175,9 @@ public class ReviewDBStorage implements ReviewDao {
 
     @Override
     public List<Review> getTopRatedReviewsByFilmId(@NotNull Long filmId, @NotNull Integer count) {
-        log.info("Обработка SQL-запроса получения списка {} отзывов для filmId {}, отсортированных по рейтингу полезности"
-                , count, filmId);
+        log.info("Обработка SQL-запроса получения списка {} отзывов для filmId {}, отсортированных по рейтингу полезности",
+                count,
+                filmId);
         String sqlQuery = "SELECT r.*, "
                 + "COALESCE(SUM(rt.rate_value), 0) AS useful "
                 + "FROM reviews AS r "
