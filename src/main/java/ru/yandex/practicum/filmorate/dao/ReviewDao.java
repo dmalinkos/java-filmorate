@@ -2,24 +2,24 @@ package ru.yandex.practicum.filmorate.dao;
 
 import ru.yandex.practicum.filmorate.model.Review;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 public interface ReviewDao {
 
-    Review add(Review review);
+    Review add(@NotNull Review review);
 
-    Review readByReviewId(Long id);
+    Review readByReviewId(@NotNull Long id);
 
-    Review update(Review review);
+    Review update(@NotNull Review review);
 
-    Review deleteById(Long id);
+    Review deleteById(@NotNull Long id);
 
-    Review setNewRateOfUser(Long userId, Long reviewId, Integer newRate);
+    Review setNewRateOfUser(@NotNull Long userId, @NotNull Long reviewId, @NotNull Integer newRate);
 
-    Review deleteRateFromUser(Long userId, Long reviewId);
+    Review deleteRateFromUser(@NotNull Long userId, @NotNull Long reviewId);
 
-    List<Review> getTopRatedReviews(Integer count);
+    List<Review> getTopRatedReviews(@NotNull Integer count);
 
-    List<Review> getTopRatedReviewsByFilmId(Long filmId, Integer count);
+    List<Review> getTopRatedReviewsByFilmId(@NotNull Long filmId, @NotNull Integer count);
 }
-

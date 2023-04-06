@@ -10,10 +10,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.dao.FilmStorage;
-import ru.yandex.practicum.filmorate.dao.GenreDao;
-import ru.yandex.practicum.filmorate.dao.MpaDao;
-import ru.yandex.practicum.filmorate.dao.UserStorage;
+import ru.yandex.practicum.filmorate.dao.*;
 import ru.yandex.practicum.filmorate.exception.EntityNotExistException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -33,6 +30,16 @@ public class FilmDbStorage implements FilmStorage {
     private final MpaDao mpaDao;
     private final GenreDao genreDao;
     private final UserStorage userStorage;
+    private final DirectorStorage directorStorage;
+
+    private static final String SQL_FIND_WHERE = "SELECT f.* " +
+            "FROM films f " +
+            "LEFT JOIN likes lf ON f.film_id = lf.film_id " +
+            "LEFT JOIN film_directors fd on f.film_id = fd.film_id " +
+            "LEFT JOIN directors d on d.director_id = fd.director_id " +
+            "WHERE %s" +
+            "GROUP BY f.film_id " +
+            "ORDER BY COUNT(lf.user_id) DESC";
 
     @Override
     public Film add(Film film) {
@@ -186,9 +193,10 @@ public class FilmDbStorage implements FilmStorage {
             return new ArrayList<>();
         }
     }
+
     @Override
     public List<Film> getCommonFilms(Long userId, Long friendId) {
-        String sql ="SELECT f.* FROM films AS f " +
+        String sql = "SELECT f.* FROM films AS f " +
                 "LEFT JOIN likes AS fl ON f.film_id = fl.film_id " +
                 "WHERE fl.film_id IN (SELECT film_id FROM likes WHERE user_id = ?) " +
                 "AND fl.film_id IN (SELECT film_id FROM likes WHERE user_id = ?) " +
@@ -200,25 +208,22 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> searchFilms(String query, String by) {
         String searchQuery = "%" + query + "%";
-        String sqlQuery = "SELECT f.* " +
-                "FROM films f " +
-                "LEFT JOIN likes lf ON f.film_id = lf.film_id " +
-                "LEFT JOIN film_directors fd on f.film_id = fd.film_id " +
-                "LEFT JOIN directors d on d.director_id = fd.director_id " +
-                "WHERE %s " +
-                "GROUP BY f.film_id " +
-                "ORDER BY COUNT(lf.user_id) DESC";
-        if(by.contains("director") && by.contains("title")){
-            String sql = String.format(sqlQuery,"LOWER(f.film_name) LIKE LOWER(?) OR LOWER(d.director_name) LIKE LOWER(?)");
-            return new ArrayList<>(jdbcTemplate.query(sql, this::mapRowToFilm,  searchQuery, searchQuery));
-        } else if (by.contains("director")) {
-            String sql = String.format(sqlQuery,"LOWER(d.director_name) LIKE LOWER(?)");
-            return new ArrayList<>(jdbcTemplate.query(sql, this::mapRowToFilm,  searchQuery));
-        } else if (by.contains("title")) {
-            String sql = String.format(sqlQuery,"LOWER(f.film_name) LIKE LOWER(?)");
-            return new ArrayList<>(jdbcTemplate.query(sql, this::mapRowToFilm,  searchQuery));
+        String sql = null;
+        List a = new ArrayList<>();
+        //Set set = by;
+        switch (by) {
+            case "director":
+                sql = String.format(SQL_FIND_WHERE, "LOWER(d.director_name) LIKE LOWER(?)");
+                return new ArrayList<>(jdbcTemplate.query(sql, this::mapRowToFilm, searchQuery));
+            case "title":
+                sql = String.format(SQL_FIND_WHERE, "LOWER(f.film_name) LIKE LOWER(?)");
+                return new ArrayList<>(jdbcTemplate.query(sql, this::mapRowToFilm, searchQuery));
+            case "title,director":
+                sql = String.format(SQL_FIND_WHERE, "LOWER(f.film_name) LIKE LOWER(?) OR LOWER(d.director_name) LIKE LOWER(?)");
+                return new ArrayList<>(jdbcTemplate.query(sql, this::mapRowToFilm, searchQuery, searchQuery));
+            default:
+                return List.of();
         }
-        return List.of();
     }
 
     @Override

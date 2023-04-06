@@ -12,6 +12,8 @@ import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.Review;
 
+
+import javax.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.List;
 
@@ -25,7 +27,7 @@ public class ReviewService {
     private final FilmDbStorage filmDbStorage;
     private final EventDao eventDao;
 
-    public Review add(Review review) {
+    public Review add(@NotNull Review review) {
         userDbStorage.isExist(review.getUserId());
         filmDbStorage.isExist(review.getFilmId());
         Review addedReview = reviewDao.add(review);
@@ -87,6 +89,7 @@ public class ReviewService {
     private List<Review> getTopRatedReviews(Integer count) {
         return reviewDao.getTopRatedReviews(count);
     }
+
     private List<Review> getTopRatedReviewsByFilmId(Long filmId, Integer count) {
         return reviewDao.getTopRatedReviewsByFilmId(filmId, count);
     }
