@@ -14,7 +14,8 @@ import javax.validation.ValidationException;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
@@ -47,14 +48,14 @@ class ReviewDBStorageTest {
 
     @Test
     void callMethodsWithNullParameters() {
-        assertThrows(ValidationException.class , () -> reviewDBStorage.add(null));
-        assertThrows(ValidationException.class , () -> reviewDBStorage.readByReviewId(null));
-        assertThrows(ValidationException.class , () -> reviewDBStorage.update(null));
-        assertThrows(ValidationException.class , () -> reviewDBStorage.deleteById(null));
-        assertThrows(ValidationException.class , () -> reviewDBStorage.setNewRateOfUser(null, 1L, 1));
-        assertThrows(ValidationException.class , () -> reviewDBStorage.deleteRateFromUser(null, 1L));
-        assertThrows(ValidationException.class , () -> reviewDBStorage.getTopRatedReviewsByFilmId(1L, null));
-        assertThrows(ValidationException.class , () -> reviewDBStorage.getTopRatedReviews(null));
+        assertThrows(ValidationException.class, () -> reviewDBStorage.add(null));
+        assertThrows(ValidationException.class, () -> reviewDBStorage.readByReviewId(null));
+        assertThrows(ValidationException.class, () -> reviewDBStorage.update(null));
+        assertThrows(ValidationException.class, () -> reviewDBStorage.deleteById(null));
+        assertThrows(ValidationException.class, () -> reviewDBStorage.setNewRateOfUser(null, 1L, 1));
+        assertThrows(ValidationException.class, () -> reviewDBStorage.deleteRateFromUser(null, 1L));
+        assertThrows(ValidationException.class, () -> reviewDBStorage.getTopRatedReviewsByFilmId(1L, null));
+        assertThrows(ValidationException.class, () -> reviewDBStorage.getTopRatedReviews(null));
     }
 
     @Test
